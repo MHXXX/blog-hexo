@@ -103,6 +103,8 @@ theme: ayer
 # Deployment
 ## Docs: https://hexo.io/docs/one-command-deployment
 deploy:
-  type: ''
+  type: git
+  repository: https://github.com/MHXXX/blog-hexo.git
+  branch: blog
 
 toc: true
