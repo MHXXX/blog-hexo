@@ -11,7 +11,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
   <title>
-    categories |  風姿花伝
+    Elasticsearch 单机配置和部署 |  風姿花伝
   </title>
   <meta name="generator" content="hexo-theme-ayer">
   
@@ -45,12 +45,93 @@
       
     <main class="content on">
       <section class="outer">
-  
-    <h1 class="page-type-title">分类</h1>
-    <div class="categories-box">
-      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/blog-hexo/categories/Elasticsearch/">Elasticsearch</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/blog-hexo/categories/PGSQL/">PGSQL</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/blog-hexo/categories/gitbook/">gitbook</a><span class="category-list-count">1</span></li></ul>
+  <article
+  id="post-Elasticsearch-单机配置和部署"
+  class="article article-type-post"
+  itemscope
+  itemprop="blogPost"
+  data-scroll-reveal
+>
+  <div class="article-inner">
+    
+    <header class="article-header">
+       
+<h1 class="article-title sea-center" style="border-left:0" itemprop="name">
+  Elasticsearch 单机配置和部署
+</h1>
+ 
+
+    </header>
+     
+    <div class="article-meta">
+      <a href="/blog-hexo/2020/12/Elasticsearch-%E5%8D%95%E6%9C%BA%E9%85%8D%E7%BD%AE%E5%92%8C%E9%83%A8%E7%BD%B2/" class="article-date">
+  <time datetime="2020-12-24T09:18:21.000Z" itemprop="datePublished">2020-12-24</time>
+</a> 
+  <div class="article-category">
+    <a class="article-category-link" href="/blog-hexo/categories/Elasticsearch/">Elasticsearch</a>
+  </div>
+ 
     </div>
+      
+    <div class="tocbot"></div>
+
+
+
+
   
+    <div class="article-entry" itemprop="articleBody">
+       
+  <h1 id="单机配置"><a href="# 单机配置" class="headerlink" title="单机配置"></a>单机配置 </h1><p> 系统配置</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">vi /etc/sysctl.conf</span><br><span class="line">    vm.max_map_count=262144</span><br><span class="line">    </span><br><span class="line">vi /etc/security/limits.conf</span><br><span class="line">    *        soft   nproc  65536</span><br><span class="line">    *        hard   nproc  65536</span><br><span class="line">    *        soft   nofile  65536</span><br><span class="line">    *        hard   nofile  65536</span><br><span class="line"></span><br><span class="line">vi /etc/security/limits.d/20-nproc.conf</span><br><span class="line">    *          soft    nproc     65536</span><br><span class="line"></span><br><span class="line">重启系统</span><br></pre></td></tr></table></figure>
+<p>elasticsearch.yml</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">cluster.name:</span> <span class="string">my-application</span></span><br><span class="line"><span class="attr">node.name:</span> <span class="string">node-1</span></span><br><span class="line"><span class="attr">network.host:</span> <span class="number">0.0</span><span class="number">.0</span><span class="number">.0</span></span><br><span class="line"><span class="attr">http.port:</span> <span class="number">9200</span></span><br><span class="line"><span class="attr">cluster.initial_master_nodes:</span> [<span class="string">&quot;node-1&quot;</span>]</span><br><span class="line"><span class="attr">node.master:</span> <span class="literal">true</span></span><br><span class="line"><span class="attr">node.data:</span> <span class="literal">true</span></span><br><span class="line"><span class="attr">http.cors.enabled:</span> <span class="literal">true</span></span><br><span class="line"><span class="attr">http.cors.allow-origin:</span> <span class="string">&quot;*&quot;</span></span><br><span class="line"><span class="attr">cluster.max_shards_per_node:</span> <span class="number">20000</span></span><br></pre></td></tr></table></figure>
+<p>jvm.options</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">默认内存太小的话会导致程序报错</span><br><span class="line"></span><br><span class="line">&#123;<span class="string">&quot;error&quot;</span>:&#123;<span class="string">&quot;root_cause&quot;</span>:[&#123;<span class="string">&quot;type&quot;</span>:<span class="string">&quot;circuit_breaking_exception&quot;</span>,<span class="string">&quot;reason&quot;</span>:<span class="string">&quot;[parent] Data too large, data for [&lt;http_request&gt;] would be [1039994134/991.8mb], which is larger than the limit of [1020054732/972.7mb], real usage: [1039984088/991.8mb], new bytes reserved: [10046/9.8kb], usages [request=0/0b, fielddata=119730528/114.1mb, in_flight_requests=10046/9.8kb, model_inference=0/0b, accounting=3024996/2.8mb]&quot;</span>,<span class="string">&quot;bytes_wanted&quot;</span>:<span class="number">1039994134</span>,<span class="string">&quot;bytes_limit&quot;</span>:<span class="number">1020054732</span>,<span class="string">&quot;durability&quot;</span>:<span class="string">&quot;PERMANENT&quot;</span>&#125;],<span class="string">&quot;type&quot;</span>:<span class="string">&quot;circuit_breaking_exception&quot;</span>,<span class="string">&quot;reason&quot;</span>:<span class="string">&quot;[parent] Data too large, data for [&lt;http_request&gt;] would be [1039994134/991.8mb], which is larger than the limit of [1020054732/972.7mb], real usage: [1039984088/991.8mb], new bytes reserved: [10046/9.8kb], usages [request=0/0b, fielddata=119730528/114.1mb, in_flight_requests=10046/9.8kb, model_inference=0/0b, accounting=3024996/2.8mb]&quot;</span>,<span class="string">&quot;bytes_wanted&quot;</span>:<span class="number">1039994134</span>,<span class="string">&quot;bytes_limit&quot;</span>:<span class="number">1020054732</span>,<span class="string">&quot;durability&quot;</span>:<span class="string">&quot;PERMANENT&quot;</span>&#125;,<span class="string">&quot;status&quot;</span>:<span class="number">429</span>&#125;</span><br><span class="line"></span><br><span class="line">-Xms32g</span><br><span class="line">-Xmx32g</span><br></pre></td></tr></table></figure>
+<h1 id="linux 上部署"><a href="#linux 上部署" class="headerlink" title="linux 上部署"></a>linux 上部署</h1><ul>
+<li>目前新版本的 elasticsearch 自带 java 运行环境, 所以不需要配置 JAVA_HOME</li>
+<li>先从 <a target="_blank" rel="noopener" href="https://www.elastic.co/cn/"> 官网 </a> 下载最新的安装包并解压</li>
+<li>创建一个非 root 用户 (例如 es) 并清除密码, 并将解压后的目录赋给 elastic</li>
+<li>调整 <code>vm.max_map_count</code> 的值为<code>262144</code></li>
+<li>进入 elasticsearch 的 bin 目录运行<code>./elasticsearch</code> 直到能成功运行</li>
+<li>编写开机自启脚本, 需要使用 <code>su -c &quot;elasticsearch -d&quot; &#123;user&#125;</code> 使其后台运行</li>
+</ul>
+ 
+      <!-- reward -->
+      
+    </div>
+    
+
+    <!-- copyright -->
+    
+    <footer class="article-footer">
+       
+    </footer>
+  </div>
+
+   
+  <nav class="article-nav">
+    
+      <a href="/blog-hexo/2020/12/gitbook-%E7%9A%84%E4%BD%BF%E7%94%A8/" class="article-nav-link">
+        <strong class="article-nav-caption">上一篇</strong>
+        <div class="article-nav-title">
+          
+            gitbook 的使用
+          
+        </div>
+      </a>
+    
+    
+      <a href="/blog-hexo/2020/12/PGSQL%E6%BA%90%E7%A0%81%E5%AE%89%E8%A3%85%E6%95%99%E7%A8%8B/" class="article-nav-link">
+        <strong class="article-nav-caption">下一篇</strong>
+        <div class="article-nav-title">PGSQL 源码安装教程</div>
+      </a>
+    
+  </nav>
+
+  
+     
+</article>
+
 </section>
       <footer class="footer">
   <div class="outer">
@@ -169,6 +250,23 @@
 <script src="/blog-hexo/js/lazyload.min.js"></script>
 
 <!-- Tocbot -->
+
+
+<script src="/blog-hexo/js/tocbot.min.js"></script>
+
+<script>
+  tocbot.init({
+    tocSelector: '.tocbot',
+    contentSelector: '.article-entry',
+    headingSelector: 'h1, h2, h3, h4, h5, h6',
+    hasInnerContainers: true,
+    scrollSmooth: true,
+    scrollContainer: 'main',
+    positionFixedSelector: '.tocbot',
+    positionFixedClass: 'is-position-fixed',
+    fixedSidebarOffset: 'auto'
+  });
+</script>
 
 <script src="https://cdn.jsdelivr.net/npm/jquery-modal@0.9.2/jquery.modal.min.js"></script>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jquery-modal@0.9.2/jquery.modal.min.css">

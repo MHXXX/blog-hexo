@@ -11,7 +11,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
   <title>
-    categories |  風姿花伝
+    PGSQL 在 Windows 环境下的主从热备 |  風姿花伝
   </title>
   <meta name="generator" content="hexo-theme-ayer">
   
@@ -45,12 +45,102 @@
       
     <main class="content on">
       <section class="outer">
-  
-    <h1 class="page-type-title">分类</h1>
-    <div class="categories-box">
-      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/blog-hexo/categories/Elasticsearch/">Elasticsearch</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/blog-hexo/categories/PGSQL/">PGSQL</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/blog-hexo/categories/gitbook/">gitbook</a><span class="category-list-count">1</span></li></ul>
+  <article
+  id="post-PGSQL在Windows环境下的主从热备"
+  class="article article-type-post"
+  itemscope
+  itemprop="blogPost"
+  data-scroll-reveal
+>
+  <div class="article-inner">
+    
+    <header class="article-header">
+       
+<h1 class="article-title sea-center" style="border-left:0" itemprop="name">
+  PGSQL 在 Windows 环境下的主从热备
+</h1>
+ 
+
+    </header>
+     
+    <div class="article-meta">
+      <a href="/blog-hexo/2020/12/PGSQL%E5%9C%A8Windows%E7%8E%AF%E5%A2%83%E4%B8%8B%E7%9A%84%E4%B8%BB%E4%BB%8E%E7%83%AD%E5%A4%87/" class="article-date">
+  <time datetime="2020-12-22T11:29:59.000Z" itemprop="datePublished">2020-12-22</time>
+</a> 
+  <div class="article-category">
+    <a class="article-category-link" href="/blog-hexo/categories/PGSQL/">PGSQL</a>
+  </div>
+ 
     </div>
+      
+    <div class="tocbot"></div>
+
+
+
+
   
+    <div class="article-entry" itemprop="articleBody">
+       
+  <h1 id="1- 配置主库"><a href="#1- 配置主库" class="headerlink" title="1. 配置主库"></a>1. 配置主库</h1><ul>
+<li>配置<code>pg_hba.conf</code></li>
+<li>在最后添加 <code>host replication postgres 0.0.0.0/0 md5</code></li>
+<li>配置<code>postgresql.conf</code>, 修改如下配置,(如果配置前面带<code>#</code>, 需要删除<code>#</code>)<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">wal_level &#x3D; replica </span><br><span class="line">max_wal_senders &#x3D; 8 </span><br><span class="line">wal_keep_segments &#x3D; 256 </span><br><span class="line">wal_sender_timeout &#x3D; 60s</span><br></pre></td></tr></table></figure></li>
+<li>启动主库</li>
+</ul>
+<h1 id="2- 开始备份"><a href="#2- 开始备份" class="headerlink" title="2. 开始备份"></a>2. 开始备份</h1><ul>
+<li>连接到主库, 执行命令 <code>select pg_start_backup(&#39;Replitionwork&#39;);</code>开启备份</li>
+<li>关闭备库, 清空备库 data 目录, 拷贝主库 data 目录下的所有文件到备库 data 目录下, 删除 <code>postmaster.pid</code> 文件</li>
+<li>在主库执行命令 <code>select  pg_stop_backup(),current_timestamp;</code> 关闭备份</li>
+</ul>
+<h1 id="3- 配置备库"><a href="#3- 配置备库" class="headerlink" title="3. 配置备库"></a>3. 配置备库</h1><ul>
+<li>拷贝备库 share 目录下 <code>recovery.conf.sample</code> 文件到 data 目录下, 重命名为<code>recovery.conf</code></li>
+<li>在 <code>recovery.conf</code> 中添加如下配置<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">standby_mode &#x3D; on </span><br><span class="line">primary_conninfo &#x3D; &#39;host&#x3D; 主库 ip port&#x3D;5432 user&#x3D;postgres password&#x3D; 主库密码 &#39; </span><br></pre></td></tr></table></figure></li>
+<li>配置 <code>postgresql.conf</code> 文件<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">hot_standby &#x3D; on </span><br><span class="line">hot_standby_feedback &#x3D; on</span><br></pre></td></tr></table></figure></li>
+<li>启动备库, 在主库执行 <code>select client_addr,sync_state from pg_stat_replication;</code> 进行验证</li>
+</ul>
+<h1 id="4- 主备切换"><a href="#4- 主备切换" class="headerlink" title="4. 主备切换"></a>4. 主备切换</h1><ul>
+<li>备库 <code>recovery.conf</code>重命名为<code>recovery.done</code></li>
+<li>主库按照上面备库配置一遍重启</li>
+</ul>
+ 
+      <!-- reward -->
+      
+    </div>
+    
+
+    <!-- copyright -->
+    
+    <footer class="article-footer">
+       
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/blog-hexo/tags/PGSQL/" rel="tag">PGSQL</a></li></ul>
+
+    </footer>
+  </div>
+
+   
+  <nav class="article-nav">
+    
+      <a href="/blog-hexo/2020/12/PGSQL%E6%BA%90%E7%A0%81%E5%AE%89%E8%A3%85%E6%95%99%E7%A8%8B/" class="article-nav-link">
+        <strong class="article-nav-caption">上一篇</strong>
+        <div class="article-nav-title">
+          
+            PGSQL 源码安装教程
+          
+        </div>
+      </a>
+    
+    
+      <a href="/blog-hexo/2020/12/%E4%BD%BF%E7%94%A8PathMan%E5%AF%B9PGSQL%E5%88%86%E8%A1%A8/" class="article-nav-link">
+        <strong class="article-nav-caption">下一篇</strong>
+        <div class="article-nav-title">使用 PathMan 对 PGSQL 分表</div>
+      </a>
+    
+  </nav>
+
+  
+     
+</article>
+
 </section>
       <footer class="footer">
   <div class="outer">
@@ -169,6 +259,23 @@
 <script src="/blog-hexo/js/lazyload.min.js"></script>
 
 <!-- Tocbot -->
+
+
+<script src="/blog-hexo/js/tocbot.min.js"></script>
+
+<script>
+  tocbot.init({
+    tocSelector: '.tocbot',
+    contentSelector: '.article-entry',
+    headingSelector: 'h1, h2, h3, h4, h5, h6',
+    hasInnerContainers: true,
+    scrollSmooth: true,
+    scrollContainer: 'main',
+    positionFixedSelector: '.tocbot',
+    positionFixedClass: 'is-position-fixed',
+    fixedSidebarOffset: 'auto'
+  });
+</script>
 
 <script src="https://cdn.jsdelivr.net/npm/jquery-modal@0.9.2/jquery.modal.min.js"></script>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jquery-modal@0.9.2/jquery.modal.min.css">

@@ -11,7 +11,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
   <title>
-    categories |  風姿花伝
+    使用 PathMan 对 PGSQL 分表 |  風姿花伝
   </title>
   <meta name="generator" content="hexo-theme-ayer">
   
@@ -45,12 +45,96 @@
       
     <main class="content on">
       <section class="outer">
-  
-    <h1 class="page-type-title">分类</h1>
-    <div class="categories-box">
-      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/blog-hexo/categories/Elasticsearch/">Elasticsearch</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/blog-hexo/categories/PGSQL/">PGSQL</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/blog-hexo/categories/gitbook/">gitbook</a><span class="category-list-count">1</span></li></ul>
+  <article
+  id="post-使用PathMan对PGSQL分表"
+  class="article article-type-post"
+  itemscope
+  itemprop="blogPost"
+  data-scroll-reveal
+>
+  <div class="article-inner">
+    
+    <header class="article-header">
+       
+<h1 class="article-title sea-center" style="border-left:0" itemprop="name">
+  使用 PathMan 对 PGSQL 分表
+</h1>
+ 
+
+    </header>
+     
+    <div class="article-meta">
+      <a href="/blog-hexo/2020/12/%E4%BD%BF%E7%94%A8PathMan%E5%AF%B9PGSQL%E5%88%86%E8%A1%A8/" class="article-date">
+  <time datetime="2020-12-22T11:21:22.000Z" itemprop="datePublished">2020-12-22</time>
+</a> 
+  <div class="article-category">
+    <a class="article-category-link" href="/blog-hexo/categories/PGSQL/">PGSQL</a>
+  </div>
+ 
     </div>
+      
+    <div class="tocbot"></div>
+
+
+
+
   
+    <div class="article-entry" itemprop="articleBody">
+       
+  <h3 id="安装 pathman"><a href="# 安装 pathman" class="headerlink" title="安装 pathman"></a>安装 pathman</h3><p>在 <a target="_blank" rel="noopener" href="https://github.com/postgrespro/pg_pathman/releases">pathman 的 github 的 release 页面</a> 获取最新的源码包</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">wget https:&#x2F;&#x2F;github.com&#x2F;postgrespro&#x2F;pg_pathman&#x2F;archive&#x2F;1.5.12.tar.gz</span><br><span class="line">tar zxvf 1.5.12.tar.gz</span><br><span class="line"></span><br><span class="line">cd pg_pathman-1.5.12</span><br><span class="line">make install USE_PGXS&#x3D;1  </span><br></pre></td></tr></table></figure>
+<p>如果安装过程中 <code>make install</code> 出现问题, 可能是 postgresql 环境变量有问题  </p>
+<h3 id="修改配置"><a href="# 修改配置" class="headerlink" title="修改配置"></a>修改配置 </h3><p> 在数据库的 <code>postgresql.conf</code> 配置文件中对 <code>shared_preload_libraries</code>进行配置</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">shared_preload_libraries &#x3D; &#39;pg_pathman&#39;</span><br></pre></td></tr></table></figure>
+<p>然后重启 pgsql</p>
+<h3 id="创建扩展"><a href="# 创建扩展" class="headerlink" title="创建扩展"></a>创建扩展</h3><p><strong>pathman 需要在使用的每个库上执行创建语句</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">CREATE EXTENSION pg_pathman</span><br></pre></td></tr></table></figure>
+<h3 id="使用"><a href="# 使用" class="headerlink" title="使用"></a>使用 </h3><p> 常用的函数</p>
+<ul>
+<li>根据 hash 进行分区<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">create_hash_partitions(parent_relid     REGCLASS,</span><br><span class="line">                       expression       TEXT,</span><br><span class="line">                       partitions_count INTEGER,</span><br><span class="line">                       partition_data   BOOLEAN DEFAULT TRUE,</span><br><span class="line">                       partition_names  TEXT[] DEFAULT NULL,</span><br><span class="line">                       tablespaces      TEXT[] DEFAULT NULL)</span><br></pre></td></tr></table></figure></li>
+<li>根据范围进行分区<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">create_range_partitions(parent_relid    REGCLASS,</span><br><span class="line">                        expression      TEXT,</span><br><span class="line">                        start_value     ANYELEMENT,</span><br><span class="line">                        p_interval      ANYELEMENT,</span><br><span class="line">                        p_count         INTEGER DEFAULT NULL</span><br><span class="line">                        partition_data  BOOLEAN DEFAULT TRUE)</span><br><span class="line"></span><br><span class="line">create_range_partitions(parent_relid    REGCLASS,</span><br><span class="line">                        expression      TEXT,</span><br><span class="line">                        start_value     ANYELEMENT,</span><br><span class="line">                        p_interval      INTERVAL,</span><br><span class="line">                        p_count         INTEGER DEFAULT NULL,</span><br><span class="line">                        partition_data  BOOLEAN DEFAULT TRUE)</span><br><span class="line"></span><br><span class="line">create_range_partitions(parent_relid    REGCLASS,</span><br><span class="line">                        expression      TEXT,</span><br><span class="line">                        bounds          ANYARRAY,</span><br><span class="line">                        partition_names TEXT[] DEFAULT NULL,</span><br><span class="line">                        tablespaces     TEXT[] DEFAULT NULL,</span><br><span class="line">                        partition_data  BOOLEAN DEFAULT TRUE)</span><br></pre></td></tr></table></figure></li>
+<li>分区后进行数据迁移<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">partition_table_concurrently(relation   REGCLASS,</span><br><span class="line">                             batch_size INTEGER DEFAULT 1000,</span><br><span class="line">                             sleep_time FLOAT8 DEFAULT 1.0)</span><br></pre></td></tr></table></figure></li>
+<li>自动创建分区(仅 range 可以使用)<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">set_auto(relation REGCLASS, value BOOLEAN)</span><br></pre></td></tr></table></figure></li>
+</ul>
+ 
+      <!-- reward -->
+      
+    </div>
+    
+
+    <!-- copyright -->
+    
+    <footer class="article-footer">
+       
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/blog-hexo/tags/PGSQL/" rel="tag">PGSQL</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/blog-hexo/tags/PathMan/" rel="tag">PathMan</a></li></ul>
+
+    </footer>
+  </div>
+
+   
+  <nav class="article-nav">
+    
+      <a href="/blog-hexo/2020/12/PGSQL%E5%9C%A8Windows%E7%8E%AF%E5%A2%83%E4%B8%8B%E7%9A%84%E4%B8%BB%E4%BB%8E%E7%83%AD%E5%A4%87/" class="article-nav-link">
+        <strong class="article-nav-caption">上一篇</strong>
+        <div class="article-nav-title">
+          
+            PGSQL 在 Windows 环境下的主从热备
+          
+        </div>
+      </a>
+    
+    
+      <a href="/blog-hexo/2020/12/%E9%A2%A8%E5%A7%BF%E8%8A%B1%E4%BC%9D/" class="article-nav-link">
+        <strong class="article-nav-caption">下一篇</strong>
+        <div class="article-nav-title">風姿花伝</div>
+      </a>
+    
+  </nav>
+
+  
+     
+</article>
+
 </section>
       <footer class="footer">
   <div class="outer">
@@ -169,6 +253,23 @@
 <script src="/blog-hexo/js/lazyload.min.js"></script>
 
 <!-- Tocbot -->
+
+
+<script src="/blog-hexo/js/tocbot.min.js"></script>
+
+<script>
+  tocbot.init({
+    tocSelector: '.tocbot',
+    contentSelector: '.article-entry',
+    headingSelector: 'h1, h2, h3, h4, h5, h6',
+    hasInnerContainers: true,
+    scrollSmooth: true,
+    scrollContainer: 'main',
+    positionFixedSelector: '.tocbot',
+    positionFixedClass: 'is-position-fixed',
+    fixedSidebarOffset: 'auto'
+  });
+</script>
 
 <script src="https://cdn.jsdelivr.net/npm/jquery-modal@0.9.2/jquery.modal.min.js"></script>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jquery-modal@0.9.2/jquery.modal.min.css">
