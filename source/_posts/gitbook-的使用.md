@@ -2,7 +2,7 @@
 title: gitbook 的使用
 date: 2020-12-24 17:23:23
 tags:
-categories: gitbook
+categories: 工具
 ---
 
 # 安装

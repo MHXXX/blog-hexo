@@ -1,7 +1,7 @@
 ---
 title: docker-compose.yml 文件详解
 date: 2020-12-30 17:03:35
-tags: Docker docker-compose
+tags: [Docker,docker-compose]
 categories: Docker
 ---
 
