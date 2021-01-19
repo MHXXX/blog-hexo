@@ -11,7 +11,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
   <title>
-    Tag: PGSQL |  風姿花伝
+    Linux 磁盘分区挂载和热扩容 |  風姿花伝
   </title>
   <meta name="generator" content="hexo-theme-ayer">
   
@@ -45,105 +45,79 @@
       
     <main class="content on">
       <section class="outer">
-  
-  <article class="articles">
+  <article
+  id="post-Linux-磁盘分区挂载和热扩容"
+  class="article article-type-post"
+  itemscope
+  itemprop="blogPost"
+  data-scroll-reveal
+>
+  <div class="article-inner">
     
-    
-    <h1 class="page-type-title">#&nbspPGSQL</h1>
-    
-    
-  
-  
-  
-  
-  
-  
-  <div class="archives-wrap">
-    <div class="archive-year-wrap">
-      <a href="/blog-hexo/archives/2020" class="archive-year">2020</a>
+    <header class="article-header">
+       
+<h1 class="article-title sea-center" style="border-left:0" itemprop="name">
+  Linux 磁盘分区挂载和热扩容
+</h1>
+ 
+
+    </header>
+     
+    <div class="article-meta">
+      <a href="/blog-hexo/2021/01/Linux-%E7%A3%81%E7%9B%98%E5%88%86%E5%8C%BA%E6%8C%82%E8%BD%BD%E5%92%8C%E7%83%AD%E6%89%A9%E5%AE%B9/" class="article-date">
+  <time datetime="2021-01-19T02:19:40.000Z" itemprop="datePublished">2021-01-19</time>
+</a> 
+  <div class="article-category">
+    <a class="article-category-link" href="/blog-hexo/categories/Linux/">Linux</a>
+  </div>
+ 
     </div>
-    <div class="archives">
       
-      <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      <a href="/blog-hexo/2020/12/PGSQL%E6%BA%90%E7%A0%81%E5%AE%89%E8%A3%85%E6%95%99%E7%A8%8B/" class="archive-article-date">
-  <time datetime="2020-12-22T11:51:32.000Z" itemprop="datePublished">12/22</time>
-</a>
+
+
+
+  
+    <div class="article-entry" itemprop="articleBody">
        
-<h2 itemprop="name">
-  <a class="archive-article-title" href="/blog-hexo/2020/12/PGSQL%E6%BA%90%E7%A0%81%E5%AE%89%E8%A3%85%E6%95%99%E7%A8%8B/"
-    >PGSQL 源码安装教程</a> 
-</h2>
+  <ol>
+<li> 查看磁盘信息 <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">fdisk -l</span><br></pre></td></tr></table></figure></li>
+<li> 对磁盘进行分区 <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">fdisk /dev/sdc</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash">1. 创建分区 n</span></span><br><span class="line"><span class="meta">#</span><span class="bash">2. 主分区 e</span></span><br><span class="line"><span class="meta">#</span><span class="bash">3. 分区号 1</span></span><br><span class="line"><span class="meta">#</span><span class="bash">4. 起始块和终止块 </span></span><br><span class="line"><span class="meta">#</span><span class="bash">5. 查看分区 p</span></span><br><span class="line"><span class="meta">#</span><span class="bash">6. 写入分区表 w</span></span><br></pre></td></tr></table></figure></li>
+<li> 格式化分区 <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mkfs -t ext4 /dev/sdc1</span><br></pre></td></tr></table></figure></li>
+<li> 挂载磁盘 <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mount /dev/sdc1 /&#123;dir&#125;</span><br></pre></td></tr></table></figure></li>
+<li> 查看磁盘 UUID<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo blkid</span><br></pre></td></tr></table></figure></li>
+<li> 开机自动挂载 <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">vim /etc/fstab</span><br><span class="line">&#123;disk&#125;  &#123;targetDirector&#125;  ext4  defaults  0  0</span><br></pre></td></tr></table></figure></li>
+<li> 分区热扩容   <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"> 以 /dev/vdb 为例, 只有一个主分区 /dev/vdb1</span><br><span class="line"></span><br><span class="line">growpart /dev/vdb 1</span><br><span class="line"></span><br><span class="line">resize2fs /dev/vdb1</span><br></pre></td></tr></table></figure></li>
+</ol>
  
-
-    </header>
-    
-    
-      
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/blog-hexo/tags/PGSQL/" rel="tag">PGSQL</a></li></ul>
-
-    
-  </div>
-</article>
-      
-  
-  
-      <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      <a href="/blog-hexo/2020/12/PGSQL%E5%9C%A8Windows%E7%8E%AF%E5%A2%83%E4%B8%8B%E7%9A%84%E4%B8%BB%E4%BB%8E%E7%83%AD%E5%A4%87/" class="archive-article-date">
-  <time datetime="2020-12-22T11:29:59.000Z" itemprop="datePublished">12/22</time>
-</a>
-       
-<h2 itemprop="name">
-  <a class="archive-article-title" href="/blog-hexo/2020/12/PGSQL%E5%9C%A8Windows%E7%8E%AF%E5%A2%83%E4%B8%8B%E7%9A%84%E4%B8%BB%E4%BB%8E%E7%83%AD%E5%A4%87/"
-    >PGSQL 在 Windows 环境下的主从热备</a> 
-</h2>
- 
-
-    </header>
-    
-    
-      
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/blog-hexo/tags/PGSQL/" rel="tag">PGSQL</a></li></ul>
-
-    
-  </div>
-</article>
-      
-  
-  
-      <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      <a href="/blog-hexo/2020/12/%E4%BD%BF%E7%94%A8PathMan%E5%AF%B9PGSQL%E5%88%86%E8%A1%A8/" class="archive-article-date">
-  <time datetime="2020-12-22T11:21:22.000Z" itemprop="datePublished">12/22</time>
-</a>
-       
-<h2 itemprop="name">
-  <a class="archive-article-title" href="/blog-hexo/2020/12/%E4%BD%BF%E7%94%A8PathMan%E5%AF%B9PGSQL%E5%88%86%E8%A1%A8/"
-    >使用 PathMan 对 PGSQL 分表</a> 
-</h2>
- 
-
-    </header>
-    
-    
-      
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/blog-hexo/tags/PGSQL/" rel="tag">PGSQL</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/blog-hexo/tags/PathMan/" rel="tag">PathMan</a></li></ul>
-
-    
-  </div>
-</article>
-      
+      <!-- reward -->
       
     </div>
+    
+
+    <!-- copyright -->
+    
+    <footer class="article-footer">
+       
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/blog-hexo/tags/Linux/" rel="tag">Linux</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/blog-hexo/tags/%E7%A3%81%E7%9B%98%E5%88%86%E5%8C%BA/" rel="tag">磁盘分区</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/blog-hexo/tags/%E7%A3%81%E7%9B%98%E6%89%A9%E5%AE%B9/" rel="tag">磁盘扩容</a></li></ul>
+
+    </footer>
   </div>
-  
-  
+
+   
+  <nav class="article-nav">
+    
+    
+      <a href="/blog-hexo/2020/12/docker-compose-yml-%E6%96%87%E4%BB%B6%E8%AF%A6%E8%A7%A3/" class="article-nav-link">
+        <strong class="article-nav-caption">下一篇</strong>
+        <div class="article-nav-title">docker-compose.yml 文件详解</div>
+      </a>
+    
+  </nav>
 
   
+     
+</article>
+
 </section>
       <footer class="footer">
   <div class="outer">
@@ -262,6 +236,23 @@
 <script src="/blog-hexo/js/lazyload.min.js"></script>
 
 <!-- Tocbot -->
+
+
+<script src="/blog-hexo/js/tocbot.min.js"></script>
+
+<script>
+  tocbot.init({
+    tocSelector: '.tocbot',
+    contentSelector: '.article-entry',
+    headingSelector: 'h1, h2, h3, h4, h5, h6',
+    hasInnerContainers: true,
+    scrollSmooth: true,
+    scrollContainer: 'main',
+    positionFixedSelector: '.tocbot',
+    positionFixedClass: 'is-position-fixed',
+    fixedSidebarOffset: 'auto'
+  });
+</script>
 
 <script src="https://cdn.jsdelivr.net/npm/jquery-modal@0.9.2/jquery.modal.min.js"></script>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jquery-modal@0.9.2/jquery.modal.min.css">
